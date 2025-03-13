@@ -1,0 +1,19 @@
+[project]
+name = "barbershop"
+version = "0.1.0"
+description = "Учебный проект барбершоп"
+authors = [
+    {name = "Konstantin",email = "Kostick_zenin@mai.ru"}
+]
+readme = "README.md"
+requires-python = "3.13.2"
+dependencies = [
+    "django (>=5.1.7,<6.0.0)",
+    "mistral (>=19.0.0,<20.0.0)",
+    "markdown (>=3.7,<4.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
