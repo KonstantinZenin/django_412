@@ -31,6 +31,24 @@
 
     <h3>Вариант 2</h3>
     {% comment %}Проверка на равенство {% endcomment %}
+    <div class="employee">
+        <p>Имя: {{employee.name}}</p>
+        <p>Статус: {{employee.is_active}}</p>
+        {% comment %}Ветвление с проверкой на равенство строк {% endcomment %}
+        {% if employee.position == "manager" %}
+        <p class="yellow-position">Менеджер барбершопа</p>
+        {% elif employee.position == "master" %}
+        <p class="blye-position">Мастер барбершопа</p>
+        {% else %}
+        <p>Неизвестная должность</p>
+        {% endif %}
+        {% comment %} Ветвление с проверкой на больше меньше {% endcomment %}
+        {% if employee.salary > 90000 %}
+        <p>Зарплата: зарплата руководящей должности: {{employee.position}}</p>
+        {% elif employee.salary > 50000 %}
+        <p>Зарплата: зарплата мастера: {{employee.position}}</p>
+        {% endif %}
+    </div>
 
 </body>
 </html>
