@@ -7,7 +7,8 @@ masters = [
     {"id": 3, "name": "Борис 'Фен' Пастернак"},
     {"id": 4, "name": "Иннокентий 'Лак' Смоктуновский"},
     {"id": 5, "name": "Раиса 'Бигуди' Горбачёва"},
-] 
+]
+
 
 def main(request):
     return HttpResponse("Добро пожаловать в барбершоп!")
@@ -29,3 +30,27 @@ def thanks(request):
     }
 
     return render(request, "thanks.html", context)
+
+
+def test(request):
+
+    class TestClass:
+        def __init__(self, name):
+            self.name = name
+       
+        def __str__(self):
+            return f'Экземпляр класса {self.__class__.__name__} с именем {self.name}'
+       
+        def say_my_name(self):
+            return f'Меня зовут {self.name}'
+        
+    test_instanse = TestClass("тестовый экземпляр")
+
+    context = {
+        "string": "Мастер по усам",
+        "number": 42,
+        "list": ["Стрижка бороды", "Усы таракан", "Укладка бровей"],
+        "dict": {"bestmaster": "Эльдар 'Бритва' Рязанов"},
+        "class": test_instanse,
+    }
+    return render(request, "test.html", context)
