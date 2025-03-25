@@ -13,6 +13,15 @@
 
 <body>
     <h1>{{title}}</h1>
-    {{orders}}
+    {% for order in orders %}
+    <div>
+        <p>{{order.client_name}}</p>
+        {% for service in order.services %}
+        <li>{{service}}</li>
+        {% endfor %}
+        <p>{{order.date}}</p>
+        <p>{{order.status}}</p>
+    </div>
+    {% endfor %}
 </body>
 </html>
