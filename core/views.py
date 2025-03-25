@@ -75,7 +75,7 @@ def orders_list(request,):
     }
     return render(request, "core/orders_list.html", context)
 
-def orders_detail(request, order_id: int):
+def order_detail(request, order_id: int):
     try:
         order = [o for o in orders if o["id"] == order_id][0]
     except IndexError:
