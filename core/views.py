@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse
+from .data import *
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -29,7 +30,7 @@ def thanks(request):
         "masters_count": masters_count,
     }
 
-    return render(request, "thanks.html", context)
+    return render(request, "core/thanks.html", context)
 
 
 class Employee:
@@ -41,7 +42,7 @@ class Employee:
         self.salary = salary
         self.position = position
         self.hobbies = hobbies
- 
+
     def __str__(self):
         return f'Имя: {self.name}.\nВозраст: {self.age}.\nЗарплата: {self.salary}.\nДолжность: {self.position}.'
 
@@ -65,3 +66,24 @@ def test(request):
         "employees": employees,
     }
     return render(request, "test.html", context)
+
+
+def orders_list(request,):
+    context = {
+        'orders': orders,
+        "title": "Список заказов",
+    }
+    return render(request, "core/orders_list.html", context)
+
+def orders_detail(request, order_id: int):
+    try:
+        order = [o for o in orders if o["id"] == order_id][0]
+    except IndexError:
+        return HttpResponse(status=404)
+    
+    context = {
+        "title": f"Заказ № {order_id}",
+        "order": order,
+    }
+
+    return render(request, "core/order_detail.html", context)
