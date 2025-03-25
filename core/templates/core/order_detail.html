@@ -12,14 +12,25 @@
 </head>
 
 <body>
-    <h1>{{title}}</h1>
-    <div>
-        <p>{{order.client_name}}</p>
-        {% for service in order.services %}
-        <li>{{service}}</li>
-        {% endfor %}
-        <p>{{order.date}}</p>
-        <p>{{order.status}}</p>
+    <div class="conteiner">
+        <div class="card m-3">
+            <h5 class="card-title text-center">Заявка №{{order.id}}</h5>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">{{order.client_name}}</li>
+                <li class="list-group-item">{{order.date}}</li>
+                <li class="list-group-item">{{order.status}}</li>
+                <li class="list-group-item">
+                    <ul>
+                        {% for service in order.services %}
+                        <li>{{service}}</li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            </ul>
+            <div class="card-body">
+                <a href="/barbershop/orders/" class="btn btn-dark">В каталог</a>
+            </div>
+        </div>
     </div>
 </body>
 </html>

@@ -12,16 +12,34 @@
 </head>
 
 <body>
-    <h1>{{title}}</h1>
-    {% for order in orders %}
-    <div>
-        <p>{{order.client_name}}</p>
-        {% for service in order.services %}
-        <li>{{service}}</li>
-        {% endfor %}
-        <p>{{order.date}}</p>
-        <p>{{order.status}}</p>
+    <div class="conteiner">
+        <div class="row">
+            <h1>{{title}}</h1>
+            {% for order in orders %}
+                <!--Для 2х карточек в ряд используем col-md-6 -->
+                <!--Для 3х карточек в ряд используем col-md-4 -->
+                <div class="col-12 col-md6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <h5 class="card-title text-center">Заявка №{{order.id}}</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">{{order.client_name}}</li>
+                            <li class="list-group-item">{{order.date}}</li>
+                            <li class="list-group-item">{{order.status}}</li>
+                            <li class="list-group-item">
+                                <ul>
+                                    {% for service in order.services %}
+                                    <li>{{service}}</li>
+                                    {% endfor %}
+                                </ul>
+                            </li>
+                        </ul>
+                        <div class="card-footer mt-auto">
+                            <a href="/barbershop/orders/{{order.id}}" class="btn btn-dark">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+        </div>
     </div>
-    {% endfor %}
 </body>
 </html>
