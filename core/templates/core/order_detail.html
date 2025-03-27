@@ -22,5 +22,6 @@
 </div>
 {% endblock content %}
 {% block scripts %}
+    {{ block.super }}
     <script src="{% static 'js/order_detail.js' %}"></script>
 {% endblock scripts %}
