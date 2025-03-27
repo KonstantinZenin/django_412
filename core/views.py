@@ -1,3 +1,4 @@
+from re import M
 from django.shortcuts import render
 from django.http import HttpResponse
 from .data import *
@@ -28,6 +29,7 @@ def thanks(request):
 
     context = {
         "masters_count": masters_count,
+        "menu_items": MENU_ITEMS,
     }
 
     return render(request, "core/thanks.html", context)
