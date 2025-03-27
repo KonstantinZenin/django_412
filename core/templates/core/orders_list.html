@@ -12,9 +12,17 @@
 </head>
 
 <body>
-    <div class="conteiner">
-        <div class="row">
-            <h1>{{title}}</h1>
+    <div class="container">
+        {% comment %} Заголовок и количество заявок {% endcomment %}
+        <div class="row align-items-center mb-3">
+            <div class="col">
+                <h1 class="mb-0">{{title}}</h1>
+            </div>
+            <div class="col">
+                <span class='badge bg-secondary'>Всего заявок: {{orders|length}}</span>
+            </div>
+        </div>
+        <div class='row'>
             {% for order in orders %}
                 <!--Для 2х карточек в ряд используем col-md-6 -->
                 <!--Для 3х карточек в ряд используем col-md-4 -->
@@ -40,6 +48,7 @@
                     </div>
                 </div>
                 {% endfor %}
+            </div>
         </div>
     </div>
 </body>
