@@ -29,7 +29,6 @@ def thanks(request):
 
     context = {
         "masters_count": masters_count,
-        "menu_items": MENU_ITEMS,
     }
 
     return render(request, "core/thanks.html", context)
