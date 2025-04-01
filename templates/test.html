@@ -63,9 +63,11 @@
         <div class="employee">
             <p>Номер сотрудника  {{forloop.counter}}</p>
             <p>Имя: {{employee.name}}</p>
+            <p>Форматированное имя: {% format_name employee.name %}</p>
             <p>Статус: {{employee.is_active}}</p>
             <p>Зарплата {{employee.salary | format_price }}</p>
             <p>Зарплата в долларах {{employee.salary | format_price:"$"}}</p> 
+            <p>Должность через тэг: {% format_position employee.position "параметр1" "параметр2" %} </p>
             {% comment %}Ветвление с проверкой на равенство строк {% endcomment %}
             {% if employee.position == "manager" %}
             <p class="yellow-position">Менеджер барбершопа</p>
