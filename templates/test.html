@@ -1,4 +1,5 @@
 {% load static %}
+{% load price_extras %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +64,8 @@
             <p>Номер сотрудника  {{forloop.counter}}</p>
             <p>Имя: {{employee.name}}</p>
             <p>Статус: {{employee.is_active}}</p>
+            <p>Зарплата {{employee.salary | format_price }}</p>
+            <p>Зарплата в долларах {{employee.salary | format_price:"$"}}</p> 
             {% comment %}Ветвление с проверкой на равенство строк {% endcomment %}
             {% if employee.position == "manager" %}
             <p class="yellow-position">Менеджер барбершопа</p>
@@ -80,7 +83,7 @@
             <p>Зарплата: зарплата бомжа!: {{employee.position}}</p>
             {% endif %}
         {% endfor %}
-         </div>
+        </div>
     {% if forloop.last %}
     <hr>
     {% endif %}
@@ -100,7 +103,7 @@
                             
                             <!-- Сквозная нумерация всех слотов -->
                             <span class="slot-number">
-                                {{ forloop.parentloop.counter0|multiply:10|add:forloop.counter }}
+                                {% comment %} {{ forloop.parentloop.counter0|multiply:10|add:forloop.counter }} {% endcomment %}
                             </span>
                             
                             <p>Время: {{ slot.time }}</p>
