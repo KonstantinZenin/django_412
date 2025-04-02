@@ -9,7 +9,13 @@
             {% for item in menu_items %}
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="{% url item.url_name %}">{{ item.name }}</a>
+            </li>
             {% endfor %}
+            {% if user.is_staff %}
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/">Админка</a>
+            </li>
+            {% endif %}
         </ul>
     </div>
     </div>

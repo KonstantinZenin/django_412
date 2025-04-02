@@ -1,4 +1,17 @@
-MENU_ITEMS=[]
+MENU_ITEMS=[
+    {
+        "name": "Главная страница",
+        "url_name": "main"
+    },
+    {
+        "name": "Список заказов",
+        "url_name": "orders_list"
+    },
+    {
+        "name": "Спасибо",
+        "url_name": "thanks"
+    }
+]
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
