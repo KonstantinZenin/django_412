@@ -1,16 +1,7 @@
-MENU_ITEMS=[
-    {
-        "name": "Главная страница",
-        "url_name": "main"
-    },
-    {
-        "name": "Список заказов",
-        "url_name": "orders_list"
-    },
-    {
-        "name": "Спасибо",
-        "url_name": "thanks"
-    }
+MENU_ITEMS = [
+    {"name": "Главная страница", "url_name": "landing"},
+    {"name": "Список заказов", "url_name": "orders_list"},
+    {"name": "Спасибо", "url_name": "thanks"},
 ]
 
 masters = [

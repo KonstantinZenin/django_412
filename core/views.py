@@ -12,7 +12,7 @@ masters = [
 ]
 
 
-def main(request):
+def landing(request):
     return HttpResponse("Добро пожаловать в барбершоп!")
 
 
@@ -35,7 +35,16 @@ def thanks(request):
 
 
 class Employee:
-    def __init__(self, name: str, is_active: bool, is_married: bool, age: int, salary: float, position: str, hobbies: list):
+    def __init__(
+        self,
+        name: str,
+        is_active: bool,
+        is_married: bool,
+        age: int,
+        salary: float,
+        position: str,
+        hobbies: list,
+    ):
         self.name = name
         self.is_active = is_active
         self.is_married = is_married
@@ -45,14 +54,46 @@ class Employee:
         self.hobbies = hobbies
 
     def __str__(self):
-        return f'Имя: {self.name}.\nВозраст: {self.age}.\nЗарплата: {self.salary}.\nДолжность: {self.position}.'
+        return f"Имя: {self.name}.\nВозраст: {self.age}.\nЗарплата: {self.salary}.\nДолжность: {self.position}."
 
 
 def test(request):
-    employee = Employee('Алевтина', True, True, 42, 100000, 'manager', ['Журналы про усы', 'Компьютерные игры', 'Пиво'])
-    employee2 = Employee('Бородач', True, False, 25, 50000, 'master', ['Садоводство', 'Пиво', 'Компьютерные игры'])
-    employee3 = Employee("Барбарис", True, False, 30, 60000, 'master', ['Газонокосилки', 'Пиво', 'Стрельба из арбалета'])
-    employee4 = Employee("Сифон", True, True, 35, 70000, 'master', ['Брендовый шмот', 'Походы в ГУМ', 'Аниме'])
+    employee = Employee(
+        "Алевтина",
+        True,
+        True,
+        42,
+        100000,
+        "manager",
+        ["Журналы про усы", "Компьютерные игры", "Пиво"],
+    )
+    employee2 = Employee(
+        "Бородач",
+        True,
+        False,
+        25,
+        50000,
+        "master",
+        ["Садоводство", "Пиво", "Компьютерные игры"],
+    )
+    employee3 = Employee(
+        "Барбарис",
+        True,
+        False,
+        30,
+        60000,
+        "master",
+        ["Газонокосилки", "Пиво", "Стрельба из арбалета"],
+    )
+    employee4 = Employee(
+        "Сифон",
+        True,
+        True,
+        35,
+        70000,
+        "master",
+        ["Брендовый шмот", "Походы в ГУМ", "Аниме"],
+    )
 
     # список сотрудников
     employees = [employee, employee2, employee3, employee4]
@@ -69,19 +110,22 @@ def test(request):
     return render(request, "test.html", context)
 
 
-def orders_list(request,):
+def orders_list(
+    request,
+):
     context = {
-        'orders': orders,
+        "orders": orders,
         "title": "Список заказов",
     }
     return render(request, "core/orders_list.html", context)
+
 
 def order_detail(request, order_id: int):
     try:
         order = [o for o in orders if o["id"] == order_id][0]
     except IndexError:
         return HttpResponse(status=404)
-    
+
     context = {
         "title": f"Заказ № {order_id}",
         "order": order,
