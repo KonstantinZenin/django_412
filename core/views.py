@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from .data import *
 from django.contrib.auth.decorators import login_required
@@ -131,10 +131,9 @@ def orders_list(
 
 @login_required
 def order_detail(request, order_id: int):
-    try:
-        order = orders = Order.objects.get(id=order_id)
-    except IndexError:
-        return HttpResponse(status=404)
+
+    order = orders = get_object_or_404(Order, id=order_id)
+
 
     context = {
         "title": f"Заказ № {order_id}",
