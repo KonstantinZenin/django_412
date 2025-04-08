@@ -1,7 +1,7 @@
-from re import M
 from django.shortcuts import render
 from django.http import HttpResponse
 from .data import *
+from django.contrib.auth.decorators import login_required
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -116,6 +116,7 @@ def test(request):
     return render(request, "test.html", context)
 
 
+@login_required
 def orders_list(
     request,
 ):
@@ -126,6 +127,7 @@ def orders_list(
     return render(request, "core/orders_list.html", context)
 
 
+@login_required
 def order_detail(request, order_id: int):
     try:
         order = [o for o in orders if o["id"] == order_id][0]
