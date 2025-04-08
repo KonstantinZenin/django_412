@@ -464,6 +464,21 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-extensions"
+version = "4.0"
+description = "Extensions for Django"
+optional = false
+python-versions = ">=3.9"
+groups = ["main"]
+files = [
+    {file = "django_extensions-4.0-py3-none-any.whl", hash = "sha256:212210eee6b82c998ddf37ed0a9f7f1a539219c211f8c5f07ca71afb36e31460"},
+    {file = "django_extensions-4.0.tar.gz", hash = "sha256:8524e70adf2f2d7312288d80354bbf28b9b2cff0ff02f06e586deb723f89039e"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[[package]]
 name = "dnspython"
 version = "2.7.0"
 description = "DNS toolkit"
@@ -2720,4 +2735,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = "3.13.2"
-content-hash = "16cb2d5f3aa738f976f0bbddae4fb9d8fae7d876de3f6422bf2e317817c9936b"
+content-hash = "8481d5f9bb7e88ea19df5a234d475dc643c992b89e7ebc85dfb69c31bf31aeae"
