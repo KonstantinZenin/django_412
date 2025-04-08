@@ -1,7 +1,4 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("Страница загружена поолностью");
-});
-
-document.addEventListener("DOMContentLoaded", function () {
-    alert("Страница загружена поолностью");
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Страница загружена полностью!');
+    // alert('Страница загружена полностью!');
 });
