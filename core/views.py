@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse
 from .data import *
 from django.contrib.auth.decorators import login_required
+from .models import Order
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -120,6 +121,7 @@ def test(request):
 def orders_list(
     request,
 ):
+    orders = Order.objects.all()
     context = {
         "orders": orders,
         "title": "Список заказов",
@@ -130,7 +132,7 @@ def orders_list(
 @login_required
 def order_detail(request, order_id: int):
     try:
-        order = [o for o in orders if o["id"] == order_id][0]
+        order = orders = Order.objects.get(id=order_id)
     except IndexError:
         return HttpResponse(status=404)
 
