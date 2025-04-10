@@ -24,6 +24,7 @@ class Order(models.Model):
     # id - генерируетс автоматически
     client_name = models.CharField(max_length=100)
     services = models.CharField(max_length=200)
+    services_22 = models.CharField(max_length=200, blank=True)
     master_id = models.IntegerField()
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
