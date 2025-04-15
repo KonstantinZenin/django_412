@@ -42,10 +42,19 @@ def thanks(request):
 
 
 @login_required
-def orders_list(
-    request,
-):
-    orders = Order.objects.all()
+def orders_list(request,):
+    
+    if request.method == "GET":
+        search_query = request.GET.get("search", None)
+
+        if search_query:
+            # Если запрос был, ищем через лукап регистронезависимое вхождение phone
+            orders = Order.objects.filter(phone__icontains=search_query)
+        else:
+            # Если запроса не было, выводим все заказы
+            orders = Order.objects.all()
+            
+
     context = {
         "orders": orders,
         "title": "Список заказов",
