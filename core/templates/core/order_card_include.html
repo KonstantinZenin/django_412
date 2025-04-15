@@ -3,11 +3,12 @@
     <h5 class="card-title text-center">Заявка №{{order.id}}</h5>
     <ul class="list-group list-group-flush">
         <li class="list-group-item">{{order.client_name}}</li>
+        <li class="list-group-item">{{order.phone}}</li>
         <li class="list-group-item">{{order.date}}</li>
         <li class="list-group-item">{{order.status}}</li>
         <li class="list-group-item">
             <ul>
-                {% for service in order.services %}
+                {% for service in order.services.all %}
                 <li>{{service}}</li>
                 {% endfor %}
             </ul>

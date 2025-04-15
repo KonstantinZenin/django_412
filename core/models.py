@@ -33,7 +33,14 @@ class Order(models.Model):
     date_update = models.DateTimeField(auto_now=True)
     # один ко многим
     master = models.ForeignKey("Master", on_delete=models.SET_NULL, null=True, related_name="orders")
+    services = models.ManyToManyField(
+        "Service", related_name="orders", blank=True, null=True
+    )
     appointment_date = models.DateTimeField(blank=True, null=True)
+
+
+    def __str__(self):
+        return f"Заказ №{self.id} от {self.client_name} на {self.appointment_date}"
 
     class Meta:
         verbose_name = "Заказ"
@@ -49,6 +56,7 @@ class Order(models.Model):
             # Пример составного индекса, если бы мы часто искали заказы мастера за перииод
             # models.Index(fields=["client_name", "phone"], name="client_phone_idx"),
         ]
+        
 
 
 class Master(models.Model):
@@ -64,6 +72,10 @@ class Master(models.Model):
     is_active = models.BooleanField(default=True)
 
 
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
 class Service(models.Model):
     name = models.CharField(max_length=200, verbose_name="Название услуги")
     description = models.TextField(verbose_name="Описание услуги")
@@ -73,6 +85,11 @@ class Service(models.Model):
     )
     is_popular = models.BooleanField(default=False, verbose_name="Популярная услуга")
     image = models.ImageField(upload_to="images/services/", blank=True, null=True, verbose_name="Изображение")
+
+
+    def __str__(self):
+        return f"{self.name}, {self.price} руб."
+    
 
     class Meta:
         verbose_name = "Услуга"
