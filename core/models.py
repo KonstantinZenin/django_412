@@ -28,6 +28,7 @@ class Order(models.Model):
     client_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     comment = models.TextField(blank=True)
+    # Для поля choises будет добавлен метод display_status
     status = models.CharField(max_length=50, choices=STATUS_CHOISES, default="not_approved")
     date_create = models.DateTimeField(auto_now_add=True)
     date_update = models.DateTimeField(auto_now=True)
