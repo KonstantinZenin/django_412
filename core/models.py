@@ -35,6 +35,21 @@ class Order(models.Model):
     master = models.ForeignKey("Master", on_delete=models.SET_NULL, null=True, related_name="orders")
     appointment_date = models.DateTimeField(blank=True, null=True)
 
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+        # Сортировка по умолчанию. "-" перед полем означает, что сортировка будет по убыванию
+        ordering = ["-date_create"]
+        # Создаём индексы.
+        indexes = [
+            # Индекс по полю "status"
+            models.Index(fields=["status"], name="status_idx"),
+            # Индекс по полям "date_create"
+            models.Index(fields=["date_create"], name="date_create_idx"),
+            # Пример составного индекса, если бы мы часто искали заказы мастера за перииод
+            # models.Index(fields=["client_name", "phone"], name="client_phone_idx"),
+        ]
+
 
 class Master(models.Model):
     first_name = models.CharField(max_length=100)
@@ -59,6 +74,6 @@ class Service(models.Model):
     is_popular = models.BooleanField(default=False, verbose_name="Популярная услуга")
     image = models.ImageField(upload_to="images/services/", blank=True, null=True, verbose_name="Изображение")
 
-    def Meta(self):
+    class Meta:
         verbose_name = "Услуга"
         verbose_name_plural = "Услуги"
