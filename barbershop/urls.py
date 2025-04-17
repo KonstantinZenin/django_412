@@ -3,6 +3,7 @@ from django.contrib import admin
 from django.urls import path
 from core.views import landing
 from django.urls import include
+from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -10,6 +11,12 @@ urlpatterns = [
     # Подключаем маршруты из приложения core
     path("barbershop/", include("core.urls")),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns = [
+        path("__debug__/", include(debug_toolbar.urls)),
+    ] + urlpatterns
 
 #  какие ещё типы конвертеров есть?
 # str: - строка без слеша /master|eleonora-arbuzova|/
