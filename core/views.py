@@ -1,8 +1,11 @@
+from tabnanny import check
+from warnings import filters
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
 from .data import *
 from django.contrib.auth.decorators import login_required
 from .models import Order
+from django.db.models import Q
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -43,23 +46,39 @@ def thanks(request):
 
 @login_required
 def orders_list(request,):
-    
     if request.method == "GET":
+        # Получаем все заказы
+        all_orders = Order.objects.all()
+
+        # Получаем строку поиска
         search_query = request.GET.get("search", None)
-
+        
         if search_query:
-            # Если запрос был, ищем через лукап регистронезависимое вхождение phone
-            orders = Order.objects.filter(phone__icontains=search_query)
-        else:
-            # Если запроса не было, выводим все заказы
-            orders = Order.objects.all()
-            
+            # Получаем чекбоксы
+            check_boxes = request.GET.getlist("search_in")
 
-    context = {
-        "orders": orders,
-        "title": "Список заказов",
-    }
-    return render(request, "core/orders_list.html", context)
+            # Проверяем чекбоксы и добавляем Q объекты в запрос
+            #  |= это оператор "или" для Q объектов
+            filters = Q()
+
+            if "phone" in check_boxes:
+                filters |= Q(phone__icontains=search_query)
+
+            if "name" in check_boxes:
+                filters |= Q(client_name__icontains=search_query)
+
+            if "comment" in check_boxes:
+                filters |= Q(comment__icontains=search_query)
+
+            if filters:
+                all_orders = all_orders.filter(filters)
+
+        # отправлем все заказы в контекст
+        context = {
+            "title": "Заказы",
+            "orders": all_orders,
+        }
+        return render(request, "core/orders_list.html", context)
 
 
 @login_required

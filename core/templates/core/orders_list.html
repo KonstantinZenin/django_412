@@ -18,6 +18,34 @@
                         <button type="submit" class="btn btn-dark">Искать</button>
                     </div>
                 </div>
+
+                <!-- Чекбоксы для выбора полей поиска-->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="d-flex flex-wrap gap-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="searchPhone" name="search_in" value="phone" {% if not request.GET.search_in or 'phone' in request.GET.search_in %}checked{% endif %}>
+                                <label class="form-check-label" for="searchPhone">
+                                    <i class="bi bi-telephone me-1">По номеру телефона</i>
+                                </label>
+
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="searchName" name="search_in" value="name" {% if 'name' in request.GET.search_in %}checked{% endif %}>
+                                <label class="form-check-label" for="searchName">
+                                    <i class="bi bi-person me-1">По имени</i>
+                                </label>
+                            </div>
+                            {% comment %} по комментарию {% endcomment %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="searchComment" name="search_in" value="comment" {% if 'comment' in request.GET.search_in %}checked{% endif %}>
+                                <label class="form-check-label" for="searchComment">
+                                    <i class="bi bi-chat me-1">По комментарию</i>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </form>
 
             {% for order in orders %}

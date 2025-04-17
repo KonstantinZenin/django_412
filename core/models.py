@@ -11,6 +11,7 @@ BooleanField - логическое поле, которое может хран
 JsonField - поле для хранения данных в формате JSON.
 """
 
+
 class Order(models.Model):
 
     # Статусы заказов
@@ -56,8 +57,7 @@ class Order(models.Model):
             models.Index(fields=["date_create"], name="date_create_idx"),
             # Пример составного индекса, если бы мы часто искали заказы мастера за перииод
             # models.Index(fields=["client_name", "phone"], name="client_phone_idx"),
-        ]
-        
+        ] 
 
 
 class Master(models.Model):
