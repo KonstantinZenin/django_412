@@ -1,11 +1,12 @@
+from re import M
 from tabnanny import check
 from warnings import filters
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-from .data import *
 from django.contrib.auth.decorators import login_required
-from .models import Order
-from django.db.models import Q
+from .models import Order, Master
+from django.db.models import Q, F
+from .data import *
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -27,11 +28,28 @@ def landing(request):
 
 
 def master_detail(request, master_id):
-    try:
-        master = [m for m in masters if m["id"] == master_id][0]
-    except IndexError:
-        return HttpResponse(f"Мастер не найден")
-    return HttpResponse(f"<h1>{master['name']}</h1>")
+    # Получаем мастера по id
+    master = get_object_or_404(Master, id=master_id)
+
+    # Увеличиваем счётчик просмотров мастера
+    # F - это специальный объект, который позволяет ссылаться на поля модели
+
+    Master.objects.filter(id=master_id).update(view_count=F("view_count") + 1)
+
+    # Обновляем объект после изменения в БД
+    master.refresh_from_db()
+
+    # Получаем свзязанные услуги мастера
+    services = master.services.all()
+
+    context={
+        "title": f"Мастер {master.first_name} {master.last_name}",
+        "master": master,
+        "services": services,
+    }
+
+    return render(request, "core/master_detail.html", context)
+
 
 
 def thanks(request):
