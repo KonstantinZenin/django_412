@@ -31,13 +31,22 @@ def master_detail(request, master_id):
     # Получаем мастера по id
     master = get_object_or_404(Master, id=master_id)
 
-    # Увеличиваем счётчик просмотров мастера
-    # F - это специальный объект, который позволяет ссылаться на поля модели
+    # Проверем просматривал ли пользователь этого мастера ранее
+    viewed_masters = request.session.get("viewed_masters", [])
 
-    Master.objects.filter(id=master_id).update(view_count=F("view_count") + 1)
+    if master_id not in viewed_masters:
 
-    # Обновляем объект после изменения в БД
-    master.refresh_from_db()
+        # Увеличиваем счётчик просмотров мастера
+        # F - это специальный объект, который позволяет ссылаться на поля модели
+
+        Master.objects.filter(id=master_id).update(view_count=F("view_count") + 1)
+
+        # Добавлем мастера в список просмотренных
+        viewed_masters.append(master_id)
+        request.session["viewed_masters"] = viewed_masters
+
+        # Обновляем объект после изменения в БД
+        master.refresh_from_db()
 
     # Получаем свзязанные услуги мастера
     services = master.services.all()
