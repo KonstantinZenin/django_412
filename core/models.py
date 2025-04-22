@@ -1,5 +1,6 @@
 from doctest import master
 from email.mime import image
+from django import db
 from django.db import models
 from sqlalchemy import ForeignKey
 """
@@ -26,12 +27,12 @@ class Order(models.Model):
     ]
 
     # id - генерируется автоматически
-    client_name = models.CharField(max_length=100)
-    phone = models.CharField(max_length=20)
-    comment = models.TextField(blank=True)
+    client_name = models.CharField(max_length=100, db_index=True)
+    phone = models.CharField(max_length=20, db_index=True)
+    comment = models.TextField(blank=True, db_index=True)
     # Для поля choises будет добавлен метод display_status
     status = models.CharField(max_length=50, choices=STATUS_CHOISES, default="not_approved")
-    date_create = models.DateTimeField(auto_now_add=True)
+    date_create = models.DateTimeField(auto_now_add=True, db_index=True)
     date_update = models.DateTimeField(auto_now=True)
     # один ко многим
     master = models.ForeignKey("Master", on_delete=models.SET_NULL, null=True, related_name="orders")
@@ -56,21 +57,22 @@ class Order(models.Model):
             # Индекс по полям "date_create"
             models.Index(fields=["date_create"], name="date_create_idx"),
             # Пример составного индекса, если бы мы часто искали заказы мастера за перииод
-            # models.Index(fields=["client_name", "phone"], name="client_phone_idx"),
+            models.Index(fields=["client_name", "phone", "comment"], name="client_phone_comment_idx"),
         ] 
 
 
 class Master(models.Model):
-    first_name = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100, db_index=True)
     last_name = models.CharField(max_length=100)
     photo = models.ImageField(upload_to="images/masters/", blank=True, null=True)
-    phone = models.CharField(max_length=20)
+    phone = models.CharField(max_length=20, db_index=True)
     address = models.CharField(max_length=255)
     email = models.EmailField(blank=True)
     experience = models.PositiveIntegerField()
     # многие ко многим
     services = models.ManyToManyField("Service", related_name="masters")
     is_active = models.BooleanField(default=True)
+    view_count = models.PositiveIntegerField(default=0, verbose_name="Количество просмотров")
 
 
     def __str__(self):
@@ -78,7 +80,8 @@ class Master(models.Model):
 
 
 class Service(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Название услуги")
+    name = models.CharField(max_length=200, verbose_name="Название услуги", db_index=True
+    )
     description = models.TextField(verbose_name="Описание услуги")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
     duration = models.PositiveIntegerField(
