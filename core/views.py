@@ -1,12 +1,17 @@
+from math import e
+from os import name
 from re import M
 from tabnanny import check
+from turtle import title
 from warnings import filters
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from .models import Order, Master
+from .models import Order, Master, Service
 from django.db.models import Q, F
 from .data import *
+from django.contrib import messages
+from .forms import ServiceForm
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -25,6 +30,24 @@ def landing(request):
         "years_on_market": 50
     }
     return render(request, "core/landing.html", context)
+
+
+
+@login_required
+def services_list(request):
+    """
+    Представление для отображения списка всех услуг
+    с возможностью их редактирования или удаления
+    """
+    # Получаем все услуги из базы данных
+    services = Service.objects.all()
+
+    context = {
+        "title": "Управление услугами",
+        "services": services,
+    }
+
+    return render(request, "core/services_list.html", context)
 
 
 def master_detail(request, master_id):
@@ -123,3 +146,107 @@ def order_detail(request, order_id: int):
     }
 
     return render(request, "core/order_detail.html", context)
+
+
+def service_create(request):
+
+    # Если метод GET - возвращаем пустую форму
+    if request.method == "GET":
+        form = ServiceForm()
+        context = {
+            "title": "Создание услуги",
+            "form": form,
+            "button_txt": "Создать"
+        }
+        return render(request, "core/service_form.html", context)
+
+    elif request.method == "POST":
+        # Создаем форму и передаем в нее POST данные
+        form = ServiceForm(request.POST)
+
+        # Если форма валидна:
+        if form.is_valid():
+            # Получаем данные из формы
+            name = form.cleaned_data.get("name")
+            description = form.cleaned_data.get("description")
+            price = form.cleaned_data.get("price")
+
+            # Создаем новую услугу
+            new_service = Service.objects.create(
+                name=name,
+                description=description,
+                price=price,
+            )
+
+            # Даем пользователю уведомление об успешном создании
+            messages.success(request, f"Услуга {new_service.name} успешно создана!")
+
+            # Перенаправляем на страницу со всеми услугами
+            return redirect("orders_list")
+
+        # В случае ошибок валидации Django автоматически заполнит form.errors
+        # и отобразит их в шаблоне, поэтому просто возвращаем форму
+        context = {
+            "title": "Создание услуги",
+            "form": form,
+            "button_txt": "Создать"
+        }
+        return render(request, "core/service_form.html", context)
+
+
+def service_update(request, service_id):
+    # Вне зависимости от метода - получаем услугу
+    service = get_object_or_404(Service, id=service_id)
+
+    # Если метод GET - возвращаем форму
+    if request.method == "GET":
+        form = ServiceForm(
+            initial = {
+                "name": service.name,
+                "description": service.description,
+                "price": service.price
+            }
+        )
+
+        context = {
+            "title": f"Редактирование услуги {service.name}",
+            "form": form,
+            "button_txt": "Обновить"
+        }
+
+        return render(request, "core/service_form.html", context)
+
+    elif request.method == "POST":
+        # Создаём форму и передаём в неё POST данные
+        form = ServiceForm(request.POST)
+
+        # Если форма валидна
+        if form.is_valid():
+            # Получаем данные из формы
+            name = form.cleaned_data.get("name")
+            description = form.cleaned_data.get("description")
+            price = form.cleaned_data.get("price")
+
+            # Проверяем, что все пол заполнены
+            if name and description and price:
+                service.name = name
+                service.description = description
+                service.price = price
+                service.save()
+
+                # Даём пользователю уведомление об успешном обновлении
+                messages.success(request, f"Услуга {service.name} успешно обновлена!")
+
+                # Перенаправлем на страницу со всеми услугами
+                return redirect("orders_list")
+        else:
+            # Если данные не валидны, возвращаем ошибку
+            messages.error(request, "Ошибка: все поля должны быть заполнены!")
+
+            context = {
+            "title": f"Редактирование услуги {service.name}",
+            "form": form,
+            "button_txt": "Обновить"
+            }
+            
+            return render(request, "core/service_form.html", context)

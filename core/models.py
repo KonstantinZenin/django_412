@@ -80,13 +80,10 @@ class Master(models.Model):
 
 
 class Service(models.Model):
-    name = models.CharField(max_length=200, verbose_name="Название услуги", db_index=True
-    )
+    name = models.CharField(max_length=200, verbose_name="Название услуги", db_index=True)
     description = models.TextField(verbose_name="Описание услуги")
     price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Цена")
-    duration = models.PositiveIntegerField(
-        help_text="Время в минутах", verbose_name="Длительность"
-    )
+    duration = models.PositiveIntegerField(help_text="Время в минутах", verbose_name="Время выполнения услуги", default=20)
     is_popular = models.BooleanField(default=False, verbose_name="Популярная услуга")
     image = models.ImageField(upload_to="images/services/", blank=True, null=True, verbose_name="Изображение")
 
