@@ -11,7 +11,7 @@ from .models import Order, Master, Service
 from django.db.models import Q, F
 from .data import *
 from django.contrib import messages
-from .forms import ServiceForm
+from .forms import ServiceForm, OrderForm
 import json
 
 masters = [
@@ -253,4 +253,35 @@ def master_services_by_id(request, master_id):
         json.dumps(response_data, ensure_ascii=False, indent=4),
         content_type="application/json"
     )
+    
+
+def order_create(request):
+    if request.method == "GET":
+        form = OrderForm()
+
+        context = {
+            "title": "Создание заказа",
+            "form": form,
+            "button_text": "Запись"
+        }
+
+        return render(request, "core/order_form.html", context)
+    
+    if request.method == "POST":
+        form = OrderForm(request.POST)
+
+        if form.is_valid():
+            form.save()
+            client_name = form.cleaned_data.get("client_name")
+            messages.success(request, f"Заказ для {client_name} успешно создан!")
+
+            return redirect("thanks")
+        
+        context = {
+            "title": "Создание заказа",
+            "form": form,
+            "button_text": "Запись"
+        }
+
+        return render(request, "core/order_form.html", context)
     

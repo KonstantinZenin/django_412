@@ -45,6 +45,7 @@ class Order(models.Model):
     def __str__(self):
         return f"Заказ №{self.id} от {self.client_name} на {self.appointment_date}"
 
+
     class Meta:
         verbose_name = "Заказ"
         verbose_name_plural = "Заказы"
