@@ -9,6 +9,7 @@ from .views import (
     service_create,
     service_update,
     services_list,
+    master_services_by_id
 )
 
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path("services/", services_list, name="services_list"),
     path('service_create/', service_create, name='service_create'),
     path('service_update/<int:service_id>/', service_update, name='service_update'),
+    path("masters_services/<int:master_id>/", master_services_by_id, name="masters_services_by_id"),
 ]

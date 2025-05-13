@@ -12,6 +12,7 @@ from django.db.models import Q, F
 from .data import *
 from django.contrib import messages
 from .forms import ServiceForm
+import json
 
 masters = [
     {"id": 1, "name": "Эльдар 'Бритва' Рязанов"},
@@ -232,3 +233,24 @@ def service_update(request, service_id):
             
             return render(request, "core/service_form.html", context)
         
+
+def master_services_by_id(request, master_id):
+    master = get_object_or_404(Master, id=master_id)
+
+    services = master.services.all()
+
+    response_data = []
+
+    for service in services:
+        response_data.append(
+            {
+                "id": service.id,
+                "name": service.name
+            }
+        )
+
+    return HttpResponse(
+        json.dumps(response_data, ensure_ascii=False, indent=4),
+        content_type="application/json"
+    )
+    

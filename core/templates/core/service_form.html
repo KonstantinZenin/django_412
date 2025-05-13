@@ -9,15 +9,15 @@
     <h1>{{title}}</h1>
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %} 
-        {{ form.as_div }}
-        {% for field in form %}
-            {% for error in field.errors %}
-                <div class="alert alert-danger">{{ error }}</div>
-            {% endfor %}
-        {% endfor %}
-        {% for error in form.non_field_errors %}
-            <div class="alert alert-danger">{{ error }}</div>
-        {% endfor %}
+        {% comment %}
+        Опишем все поля собственноручно для того чтобы:
+        1. Чекбокс не растягивался на всю ширину формы
+        2. Поле где загружается изображение, показывало старое
+
+        ["name", "description", "price", "duration", "is_popular", "image"]
+        {% endcomment %}
+        {% comment %} name {% endcomment %}
+        <div class="mb-3"></div>
         <button class="btn btn-dark" type="submit">{{button_txt}}</button>
     </form>
     {% endblock %}
