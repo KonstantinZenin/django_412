@@ -24,3 +24,251 @@
     </div>
 </div>
 {% endblock content %}
+
+<script>
+    {% comment %} 
+    Функция запроса к маршруту name="masters_services_by_id_ajax" для получения услуг мастера
+    в формате
+        {
+        "id": service.id,
+        "name": service.name,
+        } 
+    {% endcomment %}
+
+    async function getServicesByMasterId(masterId) {
+        const url = "{% url 'masters_services_by_id_ajax' %}";
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': "{{ csrf_token|escapejs }}"
+            },
+            body: JSON.stringify({ master_id: masterId })
+        });
+        if (!response.ok) {
+            throw new Error('Статус ответа: ' + response.status);
+        }
+        const data = await response.json();
+
+        return data.map(service => ({
+            id: service.id,
+            name: service.name
+        }));
+    }
+
+    // Функция для обновления выпадающего списка услуг
+    async function updateServicesDropdown(masterId) {
+        try {
+            // Получаем список услуг для выбранного мастера
+            const services = await getServicesByMasterId(masterId);
+            // Находим селект для услуг
+            const servicesSelect = document.getElementById('id_services');
+            // Очищаем текущие опции
+            servicesSelect.innerHTML = '';
+            // Добавляем новые опции на основе полученных данных
+            services.forEach(service => {
+                const option = document.createElement('option');
+                option.value = service.id;
+                option.textContent = service.name;
+                servicesSelect.appendChild(option);
+            });
+            // Включаем мультиселект, если он был отключен
+            servicesSelect.disabled = services.length === 0;
+            // Если услуг нет, добавляем сообщение
+            if (services.length === 0) {
+                const option = document.createElement('option');
+                option.textContent = 'У этого мастера нет услуг';
+                servicesSelect.appendChild(option);
+            }
+        } catch (error) {
+            console.error('Ошибка при получении услуг:', error);
+        }
+    }
+
+    // Вешаем обработчик события на изменение выбора мастера
+    document.addEventListener('DOMContentLoaded', function() {
+        const masterSelect = document.getElementById('id_master');
+        const servicesSelect = document.getElementById('id_services');
+        // Если нет мастера или услуг, выходим
+        if (!masterSelect || !servicesSelect) return;
+        // Обработчик события change для выбора мастера
+        masterSelect.addEventListener('change', function() {
+            const masterId = this.value;
+            if (masterId) {
+                updateServicesDropdown(masterId);
+            } else {
+                // Если мастер не выбран, очищаем список услуг
+                servicesSelect.innerHTML = '';
+                const option = document.createElement('option');
+                option.textContent = 'Сначала выберите мастера';
+                servicesSelect.appendChild(option);
+                servicesSelect.disabled = true;
+            }
+        });
+        // При загрузке страницы проверяем, выбран ли мастер
+        if (masterSelect.value) {
+            updateServicesDropdown(masterSelect.value);
+        } else {
+            // Если мастер не выбран, показываем подсказку
+            servicesSelect.innerHTML = '';
+            const option = document.createElement('option');
+            option.textContent = 'Сначала выберите мастера';
+            servicesSelect.appendChild(option);
+            servicesSelect.disabled = true;
+        }
+    });
+    // Улучшим виджет выбора даты
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateField = document.getElementById('id_appointment_date');
+        if (dateField) {
+            // Добавляем атрибуты для улучшения поля выбора даты
+            dateField.setAttribute('type', 'datetime-local');
+            // Устанавливаем минимальную дату (сегодня)
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            dateField.setAttribute('min', minDateTime);
+        }
+    });
+</script>
+
+{% comment %} <!-- JavaScript код для динамической подгрузки услуг -->
+<script>
+    // Загружаем данные о мастерах и их услугах
+    const mastersServices = {{ masters_services_json|safe }};
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        const masterSelect = document.getElementById('id_master');
+        const servicesSelect = document.getElementById('id_services');
+        const servicesContainer = document.getElementById('services-container');
+        const orderSummary = document.getElementById('order-summary');
+        const totalPriceElement = document.getElementById('total-price');
+        const totalDurationElement = document.getElementById('total-duration');
+        
+        // Массив для хранения информации о выбранных услугах
+        let selectedServices = [];
+        
+        // Функция для обновления списка услуг при выборе мастера
+        function updateServices() {
+            const masterId = masterSelect.value;
+            
+            // Очищаем текущий список услуг
+            servicesSelect.innerHTML = '';
+            selectedServices = [];
+            updateOrderSummary();
+            
+            if (!masterId) {
+                // Если мастер не выбран, скрываем список услуг
+                servicesContainer.style.display = 'none';
+                return;
+            }
+            
+            // Показываем контейнер с услугами
+            servicesContainer.style.display = 'block';
+            
+            // Проверяем, есть ли данные о услугах мастера
+            if (mastersServices[masterId] && Array.isArray(mastersServices[masterId])) {
+                // Заполняем список услуг из предзагруженных данных
+                mastersServices[masterId].forEach(service => {
+                    const option = document.createElement('option');
+                    option.value = service.id;
+                    option.textContent = `${service.name} - ${service.price} руб. (${service.duration} мин.)`;
+                    option.dataset.price = service.price;
+                    option.dataset.duration = service.duration;
+                    servicesSelect.appendChild(option);
+                });
+                
+                // Включаем выбор услуг
+                servicesSelect.disabled = false;
+            } else {
+                // Делаем AJAX-запрос для получения услуг мастера
+                // (как запасной вариант, если предзагруженные данные недоступны)
+                fetch(`/api/get_master_services/?master_id=${masterId}`)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Не удалось загрузить услуги');
+                        }
+                        return response.json();
+                    })
+                    .then(services => {
+                        if (Array.isArray(services)) {
+                            services.forEach(service => {
+                                const option = document.createElement('option');
+                                option.value = service.id;
+                                option.textContent = `${service.name} - ${service.price} руб. (${service.duration} мин.)`;
+                                option.dataset.price = service.price;
+                                option.dataset.duration = service.duration;
+                                servicesSelect.appendChild(option);
+                            });
+                            // Включаем выбор услуг
+                            servicesSelect.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Ошибка при загрузке услуг:', error);
+                        // Добавляем сообщение об ошибке в список
+                        const option = document.createElement('option');
+                        option.textContent = 'Ошибка загрузки услуг. Пожалуйста, попробуйте позже.';
+                        option.disabled = true;
+                        servicesSelect.appendChild(option);
+                    });
+            }
+        }
+        
+        // Функция для обновления сводки заказа
+        function updateOrderSummary() {
+            // Если нет выбранных услуг, скрываем сводку
+            if (selectedServices.length === 0) {
+                orderSummary.style.display = 'none';
+                return;
+            }
+            
+            // Показываем сводку заказа
+            orderSummary.style.display = 'block';
+            
+            // Рассчитываем общую стоимость и время
+            const totalPrice = selectedServices.reduce((sum, service) =>
+                sum + parseFloat(service.price), 0);
+                
+            const totalDuration = selectedServices.reduce((sum, service) =>
+                sum + parseInt(service.duration), 0);
+                
+            // Обновляем отображаемые значения
+            totalPriceElement.textContent = totalPrice;
+            totalDurationElement.textContent = totalDuration;
+        }
+        
+        // Слушаем изменения выбора мастера
+        masterSelect.addEventListener('change', updateServices);
+        
+        // Слушаем изменения выбора услуг
+        servicesSelect.addEventListener('change', function() {
+            // Очищаем текущий список выбранных услуг
+            selectedServices = [];
+            
+            // Получаем все выбранные опции
+            const selectedOptions = Array.from(servicesSelect.selectedOptions);
+            
+            // Добавляем информацию о каждой выбранной услуге
+            selectedOptions.forEach(option => {
+                selectedServices.push({
+                    id: option.value,
+                    price: option.dataset.price,
+                    duration: option.dataset.duration
+                });
+            });
+            
+            // Обновляем сводку заказа
+            updateOrderSummary();
+        });
+        
+        // Запускаем обновление услуг при загрузке страницы, если мастер уже выбран
+        if (masterSelect.value) {
+            updateServices();
+        }
+    });
+</script> {% endcomment %}

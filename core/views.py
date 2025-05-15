@@ -234,26 +234,37 @@ def service_update(request, service_id):
             return render(request, "core/service_form.html", context)
         
 
-def master_services_by_id(request, master_id):
+def masters_services_by_id(request, master_id=None):
+    """
+    Вью для ajax запросов фронтенда, для подгрузки услуг конкретного мастера в форму
+    m2m выбора услуг
+    """
+    # Если master_id не передан в URL, пробуем получить его из POST-запроса
+    if master_id is None:
+        data = json.loads(request.body)
+        master_id = data.get('master_id')
+    # Получаем мастера по id
     master = get_object_or_404(Master, id=master_id)
 
+    # Получаем услуги
     services = master.services.all()
 
+    # Формируем ответ в виде JSON
     response_data = []
 
     for service in services:
+        # Добавляем в ответ id и название услуги
         response_data.append(
             {
                 "id": service.id,
-                "name": service.name
+                "name": service.name,
             }
         )
-
+    # Возвращаем ответ в формате JSON
     return HttpResponse(
         json.dumps(response_data, ensure_ascii=False, indent=4),
-        content_type="application/json"
+        content_type="application/json",
     )
-    
 
 def order_create(request):
     if request.method == "GET":
