@@ -1,6 +1,7 @@
 # Опишем сигнал, который будет слушать создание записи в модель Review и проверять есть ли в поле text слова "плохо" или "ужасно". - Если нет, то меняем is_published на True
 
 from calendar import c
+from email import message
 from http import client
 
 from django.contrib.admin import action
@@ -8,7 +9,7 @@ import telegram
 from .models import Order, Review
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
-from .mistral import moderate_review
+from .mistral import is_bad_reviw
 from .telegram_bot import send_telegram_message
 from asyncio import run
 from django.conf import settings
@@ -23,11 +24,20 @@ def check_review_text(sender, instance, created, **kwargs):
     Если таких слов нет, то устанавливает is_published в True.
     """
     if created:
-        if not moderate_review(instance.text):
+        if not is_bad_reviw(instance.text):
             instance.is_published = True
             instance.save()
             # Отправка в телеграм
+            message = f"""
+*Новый отзыв от клиента!*
+*Имя*: {instance.client_name}
+*Текст*: {instance.text}
+*Оценка*: {instance.rating}
+*Ссылка на отзыв:* http://127.0.0.1:8000/admin/core/review/{instance.id}/change/
 
+#отзыв
+"""
+            run(send_telegram_message(TELEGRAM_BOT_API_KEY, TELEGRAM_USER_ID, message))
         else:
             instance.is_published = False
             instance.save()
