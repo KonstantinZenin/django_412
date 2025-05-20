@@ -58,7 +58,7 @@ class Order(models.Model):
             models.Index(fields=["status"], name="status_idx"),
             # Индекс по полю date_created (хотя для сортировки он может создаться и так,
             # но явное указание не повредит и поможет при фильтрации)
-            models.Index(fields=["date_created"], name="created_at_idx"),
+            models.Index(fields=["date_create"], name="created_at_idx"),
             # Пример составного индекса, если бы мы часто искали заказы мастера за период
             models.Index(
                 fields=["client_name", "phone", "comment"],
