@@ -106,47 +106,62 @@ def thanks(request):
 
 
 @login_required
-def orders_list(request,):
+def orders_list(request):
+    # Проверяем, что пользователь является сотрудником
+    if not request.user.is_staff:
+        # Если пользователь не сотрудник, перенаправляем его на главную
+        messages.error(request, "У вас нет доступа к этому разделу")
+        return redirect("landing")
+
     if request.method == "GET":
         # Получаем все заказы
-        # используем жадную загрузку для мастеров и услуг
+        # Используем жадную загрузку для мастеров и услуг
         all_orders = (
             Order.objects.select_related("master").prefetch_related("services").all()
         )
 
         # Получаем строку поиска
         search_query = request.GET.get("search", None)
-        
+
         if search_query:
             # Получаем чекбоксы
             check_boxes = request.GET.getlist("search_in")
 
-            # Проверяем чекбоксы и добавляем Q объекты в запрос
-            #  |= это оператор "или" для Q объектов
+            # Проверяем Чекбоксы и добавляем Q объекты в запрос
+            # |= это оператор "или" для Q объектов
             filters = Q()
 
             if "phone" in check_boxes:
-                filters |= Q(phone__icontains=search_query)
+                # Полная запись где мы увеличиваем фильтры
+                filters = filters | Q(phone__icontains=search_query)
 
             if "name" in check_boxes:
+                # Сокращенная запись через inplace оператор
                 filters |= Q(client_name__icontains=search_query)
 
             if "comment" in check_boxes:
                 filters |= Q(comment__icontains=search_query)
 
             if filters:
+                # Если фильтры появились. Если Q остался пустым, мы не попадем сюда
                 all_orders = all_orders.filter(filters)
 
-        # отправлем все заказы в контекст
+        # Отправляем все заказы в контекст
         context = {
             "title": "Заказы",
             "orders": all_orders,
         }
+
         return render(request, "core/orders_list.html", context)
 
 
 @login_required
 def order_detail(request, order_id: int):
+    # Проверяем, что пользователь является сотрудником
+    if not request.user.is_staff:
+        # Если пользователь не сотрудник, перенаправляем его на главную
+        messages.error(request, "У вас нет доступа к этой странице")
+        return redirect("landing")
 
     order = orders = get_object_or_404(Order, id=order_id)
 
