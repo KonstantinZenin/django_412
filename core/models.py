@@ -16,7 +16,7 @@ JsonField - поле для хранения данных в формате JSON
 class Order(models.Model):
 
     # Статусы заказов
-    STATUS_CHOISES = [
+    STATUS_CHOICES = [
         ("not_approved", "Не подтвержден"),
         ("moderated", "Прошёл модерацию"),
         ("spam", "Спам"),
@@ -31,7 +31,8 @@ class Order(models.Model):
     phone = models.CharField(max_length=20, db_index=True)
     comment = models.TextField(blank=True, db_index=True)
     # Для поля choises будет добавлен метод display_status
-    status = models.CharField(max_length=50, choices=STATUS_CHOISES, default="not_approved")
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="not_approved"
+    )
     date_create = models.DateTimeField(auto_now_add=True, db_index=True)
     date_update = models.DateTimeField(auto_now=True)
     # один ко многим
@@ -53,13 +54,17 @@ class Order(models.Model):
         ordering = ["-date_create"]
         # Создаём индексы.
         indexes = [
-            # Индекс по полю "status"
+            # Индекс по полю status
             models.Index(fields=["status"], name="status_idx"),
-            # Индекс по полям "date_create"
-            models.Index(fields=["date_create"], name="date_create_idx"),
-            # Пример составного индекса, если бы мы часто искали заказы мастера за перииод
-            models.Index(fields=["client_name", "phone", "comment"], name="client_phone_comment_idx"),
-        ] 
+            # Индекс по полю date_created (хотя для сортировки он может создаться и так,
+            # но явное указание не повредит и поможет при фильтрации)
+            models.Index(fields=["date_created"], name="created_at_idx"),
+            # Пример составного индекса, если бы мы часто искали заказы мастера за период
+            models.Index(
+                fields=["client_name", "phone", "comment"],
+                name="client_phone_comment_idx",
+            ),
+        ]
 
 
 class Master(models.Model):
@@ -103,32 +108,23 @@ class Review(models.Model):
     """
     Модель для хранения отзывов клиентов о мастерах
     """
+
     client_name = models.CharField(max_length=100, verbose_name="Имя клиента")
     text = models.TextField(verbose_name="Текст отзыва")
     rating = models.IntegerField(
-        verbose_name="Оценка", 
-        validators=[MinValueValidator(1), MaxValueValidator(5)]
+        verbose_name="Оценка", validators=[MinValueValidator(1), MaxValueValidator(5)]
     )
     master = models.ForeignKey(
-        "Master", 
-        on_delete=models.CASCADE, 
+        "Master",
+        on_delete=models.CASCADE,
         related_name="reviews",
-        verbose_name="Мастер"
+        verbose_name="Мастер",
     )
     photo = models.ImageField(
-        upload_to="images/reviews/", 
-        blank=True, 
-        null=True,
-        verbose_name="Фотография"
+        upload_to="images/reviews/", blank=True, null=True, verbose_name="Фотография"
     )
-    is_published = models.BooleanField(
-        default=False,
-        verbose_name="Опубликован"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True, 
-        verbose_name="Дата создания"
-    )
+    is_published = models.BooleanField(default=False, verbose_name="Опубликован")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def __str__(self):
         return f"Отзыв от {self.client_name} о мастере {self.master}"
