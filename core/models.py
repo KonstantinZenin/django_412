@@ -27,20 +27,28 @@ class Order(models.Model):
     ]
 
     # id - генерируется автоматически
-    client_name = models.CharField(max_length=100, db_index=True)
-    phone = models.CharField(max_length=20, db_index=True)
-    comment = models.TextField(blank=True, db_index=True)
+    client_name = models.CharField(max_length=100, db_index=True, verbose_name="Имя клиента")
+    phone = models.CharField(max_length=20, db_index=True, verbose_name="Телефон клиента")
+    comment = models.TextField(blank=True, db_index=True, verbose_name="Комментарий клиента")
     # Для поля choises будет добавлен метод display_status
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="not_approved"
+    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default="not_approved", verbose_name="Статус заказа",)
+    date_create = models.DateTimeField(
+        auto_now_add=True, db_index=True, verbose_name="Дата создания"
     )
-    date_create = models.DateTimeField(auto_now_add=True, db_index=True)
-    date_update = models.DateTimeField(auto_now=True)
+    date_update = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")
     # один ко многим
-    master = models.ForeignKey("Master", on_delete=models.SET_NULL, null=True, related_name="orders")
-    services = models.ManyToManyField(
-        "Service", related_name="orders", blank=True, null=True
+    master = models.ForeignKey(
+        "Master",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="orders",
+        verbose_name="Мастер",
     )
-    appointment_date = models.DateTimeField(blank=True, null=True)
+    services = models.ManyToManyField(
+        "Service", related_name="orders", blank=True, null=True, verbose_name="Выбранные услуги")
+    appointment_date = models.DateTimeField(
+        blank=True, null=True, verbose_name="Дата и время записи"
+    )
 
 
     def __str__(self):
@@ -68,21 +76,35 @@ class Order(models.Model):
 
 
 class Master(models.Model):
-    first_name = models.CharField(max_length=100, db_index=True)
-    last_name = models.CharField(max_length=100)
-    photo = models.ImageField(upload_to="images/masters/", blank=True, null=True)
-    phone = models.CharField(max_length=20, db_index=True)
-    address = models.CharField(max_length=255)
-    email = models.EmailField(blank=True)
-    experience = models.PositiveIntegerField()
+    first_name = models.CharField(
+        max_length=100, db_index=True, verbose_name="Имя мастера"
+    )
+    last_name = models.CharField(max_length=100, verbose_name="Фамилия мастера")
+    photo = models.ImageField(
+        upload_to="images/masters/", blank=True, null=True, verbose_name="Фото мастера"
+    )
+    phone = models.CharField(
+        max_length=20, db_index=True, verbose_name="Телефон мастера"
+    )
+    address = models.CharField(max_length=255, verbose_name="Адрес мастера")
+    email = models.EmailField(blank=True, verbose_name="Email мастера")
+    experience = models.PositiveIntegerField(verbose_name="Опыт работы")
     # многие ко многим
-    services = models.ManyToManyField("Service", related_name="masters")
-    is_active = models.BooleanField(default=True)
+    services = models.ManyToManyField(
+        "Service", related_name="masters", verbose_name="Услуги мастера"
+    )
+    is_active = models.BooleanField(default=True, verbose_name="Активен")
     view_count = models.PositiveIntegerField(default=0, verbose_name="Количество просмотров")
 
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+    
+
+    class Meta:
+        verbose_name = "Мастер"
+        verbose_name_plural = "Мастера"
+        ordering = ["-experience"] 
 
 
 class Service(models.Model):
@@ -101,6 +123,7 @@ class Service(models.Model):
     class Meta:
         verbose_name = "Услуга"
         verbose_name_plural = "Услуги"
+        ordering = ["name"]
 
 
 
