@@ -71,6 +71,11 @@ class MasterAdmin(admin.ModelAdmin):
     list_editable = ("is_active", "experience")
     # список действий в админке
     actions = ["make_active", "make_inactive"]
+    # Настройка для пагинатора (сколько мастеров на одной странице)
+    list_per_page = 25
+
+    # Кастомизация детального представления мастера
+    readonly_fields = ("view_count",)
 
 
 # Какое название будет у поля в админке
