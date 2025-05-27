@@ -29,7 +29,7 @@ class OrderAdmin(admin.ModelAdmin):
     list_filter = ("status", "master", "appointment_date")
 
     # Нередактируемые поля в админке
-    readonly_fields = ("date_created", "date_updated")
+    readonly_fields = ("date_create", "date_update")
 
 
     list_per_page = 25
