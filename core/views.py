@@ -2,7 +2,7 @@ from math import e
 from pyexpat import model
 import re
 from django.shortcuts import redirect, render
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from voluptuous import extra
 from .data import *
 from django.contrib.auth.decorators import login_required
@@ -187,14 +187,16 @@ def orders_list(request):
         return render(request, "core/orders_list.html", context)
 
 
-class OrderDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+class OrderDetailView(LoginRequiredMixin, DetailView):
     model = Order
     template_name = "core/order_detail.html"
     pk_url_kwarg = "order_id"
 
-    def test_func(self):
-        # Проверяем, что пользователь является сотрудником
-        return self.request.user.is_staff
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_staff:
+            messages.error(request, "У вас нет доступа к этому разделу")
+            return redirect("landing")
+        return super().dispatch(request, *args, **kwargs)
 
 
 def service_create(request):
