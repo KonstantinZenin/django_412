@@ -1,4 +1,5 @@
 from math import e
+from pyexpat import model
 import re
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse
@@ -10,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
 from django.views.generic import TemplateView, ListView, DetailView
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 
 # messages - это встроенный модуль Django для отображения сообщений пользователю
 from django.contrib import messages
@@ -185,23 +187,14 @@ def orders_list(request):
         return render(request, "core/orders_list.html", context)
 
 
-@login_required
-def order_detail(request, order_id: int):
-    # Проверяем, что пользователь является сотрудником
-    if not request.user.is_staff:
-        # Если пользователь не сотрудник, перенаправляем его на главную
-        messages.error(request, "У вас нет доступа к этой странице")
-        return redirect("landing")
+class OrderDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
+    model = Order
+    template_name = "core/order_detail.html"
+    pk_url_kwarg = "order_id"
 
-    order = orders = get_object_or_404(Order, id=order_id)
-
-
-    context = {
-        "title": f"Заказ № {order_id}",
-        "order": order,
-    }
-
-    return render(request, "core/order_detail.html", context)
+    def test_func(self):
+        # Проверяем, что пользователь является сотрудником
+        return self.request.user.is_staff
 
 
 def service_create(request):
