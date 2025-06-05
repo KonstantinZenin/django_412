@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="service-detail">
+    <h1>{{ service.name }}</h1>
+    {% if service.image %}
+        <img src="{{ service.image.url }}" alt="{{ service.name }}" style="max-width:300px;">
+    {% endif %}
+    <p><strong>Описание:</strong> {{ service.description }}</p>
+    <p><strong>Длительность:</strong> {{ service.duration }} мин.</p>
+    <p><strong>Цена:</strong> {{ service.price }} ₽</p>
+    {% if service.masters.exists %}
+        <p><strong>Мастера, предоставляющие услугу:</strong></p>
+        <ul>
+            {% for master in service.masters.all %}
+                <li>{{ master.first_name }} {{ master.last_name }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <a href="{% url 'services_list' %}" class="btn btn-secondary">Назад к списку услуг</a>
+</div>
+{% endblock %}

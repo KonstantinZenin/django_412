@@ -2,12 +2,14 @@ from math import e
 import re
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse
+from voluptuous import extra
 from .data import *
 from django.contrib.auth.decorators import login_required
 from .models import Order, Master, Service, Review
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
-from django.views.generic import TemplateView
+from django.views.generic import TemplateView, ListView, DetailView
+from django.views import View
 
 # messages - это встроенный модуль Django для отображения сообщений пользователю
 from django.contrib import messages
@@ -94,14 +96,42 @@ def master_detail(request, master_id):
     return render(request, "core/master_detail.html", context)
 
 
-class ThanksView(TemplateView):
+# Перепишем представление thanks на TemplateView
+class ThanksView(TemplateView): # Существующий класс, дорабатываем его
     template_name = "core/thanks.html"
 
     def get_context_data(self, **kwargs):
+        """
+        Формирует и возвращает словарь контекста для шаблона "Спасибо".
+        Добавляет количество активных мастеров, дополнительное сообщение
+        и обрабатывает параметр 'source' из URL.
+        """
         context = super().get_context_data(**kwargs)
+        
         # Получаем количество активных мастеров из базы данных
+        # Это полезная информация, которую можно отобразить на странице благодарности.
         masters_count = Master.objects.filter(is_active=True).count()
         context["masters_count"] = masters_count
+        
+        # Добавим новый статический элемент в контекст для демонстрации
+        context["additional_message"] = "Спасибо, что выбрали наш первоклассный сервис!"
+        
+        # Проверим, передан ли параметр 'source' в URL.
+        # kwargs содержит именованные аргументы, захваченные из URL-шаблона.
+        # Например, если URL /thanks/order/, то kwargs будет {'source': 'order'}
+        if 'source' in kwargs:
+            source_page = kwargs['source']
+            if source_page == 'order':
+                context['source_message'] = "Ваш заказ успешно создан и принят в обработку."
+            elif source_page == 'review':
+                context['source_message'] = "Ваш отзыв успешно отправлен и будет опубликован после модерации."
+            else:
+                # Общий случай, если источник не 'order' и не 'review'
+                context['source_message'] = f"Благодарим вас за ваше действие, инициированное со страницы: {source_page}."
+        else:
+            # Если параметр 'source' не передан
+            context['source_message'] = "Благодарим вас за посещение!"
+            
         return context
 
 
@@ -398,3 +428,48 @@ def get_master_info(request):
                 return JsonResponse({"success": False, "error": "Мастер не найден"})
         return JsonResponse({"success": False, "error": "Не указан ID мастера"})
     return JsonResponse({"success": False, "error": "Недопустимый запрос"})
+
+# --- Этап 1: Базовые CBV ---
+# 1. GreetingView на основе django.views.View
+class GreetingView(View):
+    """
+    Простое представление на основе базового класса View.
+    Демонстрирует обработку GET и POST запросов.
+    """
+    # Сообщения для разных типов запросов
+    greeting_get_message = "Привет, мир! Это GET запрос из GreetingView."
+    greeting_post_message = "Вы успешно отправили POST запрос в GreetingView!"
+
+    # Атрибут http_method_names определяет, какие HTTP-методы разрешены для этого View.
+    # По умолчанию он включает 'get', 'post', 'put', 'patch', 'delete', 'head', 'options', 'trace'.
+    # Мы можем его переопределить, если хотим ограничить поддерживаемые методы.
+    # http_method_names = ['get', 'post'] # В данном случае это избыточно, т.к. мы реализуем get и post
+
+    def get(self, request, *args, **kwargs):
+        """
+        Обрабатывает GET-запросы.
+        Возвращает простое HTTP-сообщение.
+        """
+        # request - это объект HttpRequest
+        # args и kwargs - это позиционные и именованные аргументы, захваченные из URL
+        return HttpResponse(self.greeting_get_message)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Обрабатывает POST-запросы.
+        Возвращает простое HTTP-сообщение.
+        """
+        # Здесь могла бы быть логика обработки данных из POST-запроса,
+        # например, сохранение данных формы.
+        return HttpResponse(self.greeting_post_message)
+
+
+class ServiceDetailView(DetailView):
+    """
+    Представление для отображения детальной информации об услуге.
+    Использует модель Service и явно указанное имя шаблона.
+    в шаблон будет передан объект service (имя по умолчанию для контекстной переменной).
+    """
+
+    model = Service
+    template_name = "core/service_detail.html"
