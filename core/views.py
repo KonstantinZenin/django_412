@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Order, Master, Service, Review
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
+from django.views.generic import TemplateView
 
 # messages - это встроенный модуль Django для отображения сообщений пользователю
 from django.contrib import messages
@@ -93,16 +94,15 @@ def master_detail(request, master_id):
     return render(request, "core/master_detail.html", context)
 
 
+class ThanksView(TemplateView):
+    template_name = "core/thanks.html"
 
-def thanks(request):
-    # Получаем количество активных мастеров из базы данных
-    masters_count = Master.objects.filter(is_active=True).count()
-
-    context = {
-        "masters_count": masters_count,
-    }
-
-    return render(request, "core/thanks.html", context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Получаем количество активных мастеров из базы данных
+        masters_count = Master.objects.filter(is_active=True).count()
+        context["masters_count"] = masters_count
+        return context
 
 
 @login_required
