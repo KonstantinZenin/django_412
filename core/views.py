@@ -1,6 +1,8 @@
 from math import e
 from pyexpat import model
 import re
+from django.db.models.query import QuerySet
+from django.forms import BaseModelForm
 from django.shortcuts import redirect, render
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from voluptuous import extra
@@ -10,8 +12,11 @@ from .models import Order, Master, Service, Review
 from django.shortcuts import get_object_or_404
 from django.db.models import Q, F
 from django.views.generic import TemplateView, ListView, DetailView
+from django.views.generic.edit import CreateView, UpdateView, DeleteView
 from django.views import View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse_lazy
+
 
 # messages - это встроенный модуль Django для отображения сообщений пользователю
 from django.contrib import messages
@@ -25,6 +30,22 @@ masters = [
     {"id": 4, "name": "Иннокентий 'Лак' Смоктуновский"},
     {"id": 5, "name": "Раиса 'Бигуди' Горбачёва"},
 ]
+
+class StaffRequiredMixin(UserPassesTestMixin):
+    """
+    Миксин для проверки, является ли пользователь сотрудником (is_staff).
+    Если проверка не пройдена, пользователь перенаправляется на главную страницу
+    с сообщением об ошибке.
+    """
+    def test_func(self):
+        # Проверяем, аутентифицирован ли пользователь и является ли он сотрудником
+        return self.request.user.is_authenticated and self.request.user.is_staff
+
+    def handle_no_permission(self):
+        # Этот метод вызывается, если test_func вернул False
+        messages.error(self.request, "У вас нет доступа к этому разделу.")
+        return redirect("landing") # Предполагаем, что 'landing' - это имя URL главной страницы
+
 
 
 def landing(request):
@@ -59,6 +80,18 @@ def services_list(request):
     }
 
     return render(request, "core/services_list.html", context)
+
+
+class ServicesListView(StaffRequiredMixin, ListView):
+    """
+    Представление для отображения списка всех услуг
+    с возможностью их редактирования или удаления
+    """
+
+    model = Service
+    template_name = "core/services_list.html"
+    context_object_name = "services"
+    extra_context = {"title": "Управление услугами"}
 
 
 def master_detail(request, master_id):
@@ -137,15 +170,62 @@ class ThanksView(TemplateView): # Существующий класс, дора�
         return context
 
 
-@login_required
-def orders_list(request):
-    # Проверяем, что пользователь является сотрудником
-    if not request.user.is_staff:
-        # Если пользователь не сотрудник, перенаправляем его на главную
-        messages.error(request, "У вас нет доступа к этому разделу")
-        return redirect("landing")
+# @login_required
+# def orders_list(request):
+#     # Проверяем, что пользователь является сотрудником
+#     if not request.user.is_staff:
+#         # Если пользователь не сотрудник, перенаправляем его на главную
+#         messages.error(request, "У вас нет доступа к этому разделу")
+#         return redirect("landing")
 
-    if request.method == "GET":
+#     if request.method == "GET":
+#         # Получаем все заказы
+#         # Используем жадную загрузку для мастеров и услуг
+#         all_orders = (
+#             Order.objects.select_related("master").prefetch_related("services").all()
+#         )
+
+#         # Получаем строку поиска
+#         search_query = request.GET.get("search", None)
+
+#         if search_query:
+#             # Получаем чекбоксы
+#             check_boxes = request.GET.getlist("search_in")
+
+#             # Проверяем Чекбоксы и добавляем Q объекты в запрос
+#             # |= это оператор "или" для Q объектов
+#             filters = Q()
+
+#             if "phone" in check_boxes:
+#                 # Полная запись где мы увеличиваем фильтры
+#                 filters = filters | Q(phone__icontains=search_query)
+
+#             if "name" in check_boxes:
+#                 # Сокращенная запись через inplace оператор
+#                 filters |= Q(client_name__icontains=search_query)
+
+#             if "comment" in check_boxes:
+#                 filters |= Q(comment__icontains=search_query)
+
+#             if filters:
+#                 # Если фильтры появились. Если Q остался пустым, мы не попадем сюда
+#                 all_orders = all_orders.filter(filters)
+
+#         # Отправляем все заказы в контекст
+#         context = {
+#             "title": "Заказы",
+#             "orders": all_orders,
+#         }
+
+#         return render(request, "core/orders_list.html", context)
+
+
+class OrdersListView(StaffRequiredMixin, ListView):
+    model = Order
+    template_name = "core/orders_list.html"
+    context_object_name = "orders"
+    
+    def get_queryset(self):
         # Получаем все заказы
         # Используем жадную загрузку для мастеров и услуг
         all_orders = (
@@ -153,11 +233,11 @@ def orders_list(request):
         )
 
         # Получаем строку поиска
-        search_query = request.GET.get("search", None)
+        search_query = self.request.GET.get("search", None)
 
         if search_query:
             # Получаем чекбоксы
-            check_boxes = request.GET.getlist("search_in")
+            check_boxes = self.request.GET.getlist("search_in")
 
             # Проверяем Чекбоксы и добавляем Q объекты в запрос
             # |= это оператор "или" для Q объектов
@@ -178,25 +258,14 @@ def orders_list(request):
                 # Если фильтры появились. Если Q остался пустым, мы не попадем сюда
                 all_orders = all_orders.filter(filters)
 
-        # Отправляем все заказы в контекст
-        context = {
-            "title": "Заказы",
-            "orders": all_orders,
-        }
-
-        return render(request, "core/orders_list.html", context)
+        return all_orders
 
 
-class OrderDetailView(LoginRequiredMixin, DetailView):
+class OrderDetailView(StaffRequiredMixin, DetailView):
     model = Order
     template_name = "core/order_detail.html"
     pk_url_kwarg = "order_id"
 
-    def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_staff:
-            messages.error(request, "У вас нет доступа к этому разделу")
-            return redirect("landing")
-        return super().dispatch(request, *args, **kwargs)
 
 
 def service_create(request):
@@ -282,7 +351,25 @@ def service_update(request, service_id):
             }
             
             return render(request, "core/service_form.html", context)
-        
+
+
+class ServiceCreateView(CreateView):
+    form_class = ServiceForm
+    template_name = "core/service_form.html"
+    success_url = reverse_lazy("services_list")
+    extra_context = {"title": "Создание услуги", "button_txt": "Создать"}
+
+    def form_valid(self, form) -> HttpResponse:
+        messages.success(
+            self.request, f"Услуга {form.cleaned_data.get('name')} успешно создана!"
+        )
+        return super().form_valid(form)
+    
+
+    def form_invalid(self, form) -> HttpResponse:
+        messages.error(self.request, "Ошибка формы: проверьте ввод данных")
+        return super().form_invalid(form)
+
 
 def masters_services_by_id(request, master_id=None):
     """
