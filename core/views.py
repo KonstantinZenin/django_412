@@ -48,21 +48,14 @@ class StaffRequiredMixin(UserPassesTestMixin):
 
 
 
-def landing(request):
-    # Получаем список активных мастеров из базы данных
-    masters_db = Master.objects.filter(is_active=True)
-
-    # Получаем все услуги из базы данных вместо только популярных
-    all_services = Service.objects.all()
-
-    context = {
+class LandingPageView(TemplateView):
+    template_name = "core/landing.html"
+    extra_context = {
         "title": "Главная - Барбершоп Арбуз",
-        "services": all_services,  # Все услуги из базы данных
-        "masters": masters_db,  # Из базы данных
+        "services": Service.objects.all(),  # Все услуги из базы данных
+        "masters": Master.objects.filter(is_active=True),  # Из базы данных
         "years_on_market": 50,
     }
-    return render(request, "core/landing.html", context)
-
 
 
 @login_required
@@ -265,92 +258,6 @@ class OrderDetailView(StaffRequiredMixin, DetailView):
     model = Order
     template_name = "core/order_detail.html"
     pk_url_kwarg = "order_id"
-
-
-
-def service_create(request):
-
-    # Если метод GET - возвращаем пустую форму
-    if request.method == "GET":
-        form = ServiceForm()
-        context = {
-            "title": "Создание услуги",
-            "form": form,
-            "button_txt": "Создать"
-        }
-        return render(request, "core/service_form.html", context)
-
-    elif request.method == "POST":
-        # Создаем форму и передаем в нее POST данные
-        form = ServiceForm(request.POST, request.FILES) 
-
-        # Если форма валидна:
-        if form.is_valid():
-            # Так как это ModelForm - нам не надо извлекать пол по отдельности
-            # Сохраняем форму в БД
-            form.save()
-            service_name = form.cleaned_data.get("name")
-
-            # Даем пользователю уведомление об успешном создании
-            messages.success(request, f"Услуга {service_name} успешно создана!")
-
-            # Перенаправляем на страницу со всеми услугами
-            return redirect("services_list")
-
-        # В случае ошибок валидации Django автоматически заполнит form.errors
-        # и отобразит их в шаблоне, поэтому просто возвращаем форму
-        context = {
-            "title": "Создание услуги",
-            "form": form,
-            "button_txt": "Создать"
-        }
-        return render(request, "core/service_form.html", context)
-
-
-def service_update(request, service_id):
-    # Вне зависимости от метода - получаем услугу
-    service = get_object_or_404(Service, id=service_id)
-
-    # Если метод GET - возвращаем форму
-    if request.method == "GET":
-        # У нас форма связана с моделью. Рендер всех полей
-        # Просто ложим в форму обьект услуги
-        form = ServiceForm(instance=service)
-
-        context = {
-            "title": f"Редактирование услуги {service.name}",
-            "form": form,
-            "button_txt": "Обновить"
-        }
-
-        return render(request, "core/service_form.html", context)
-
-    elif request.method == "POST":
-        # Создаём форму и передаём в неё POST данные
-        form = ServiceForm(request.POST, request.FILES, instance=service)
-
-        # Если форма валидна
-        if form.is_valid():
-            # Форма связана с моделью просто сохраняем её
-            form.save()
-
-            service_name = form.cleaned_data.get("name")
-            # Даём пользователю уведомление об успешном обновлении
-            messages.success(request, f"Услуга {service.name} успешно обновлена!")
-
-            # Перенаправлем на страницу со всеми услугами
-            return redirect("services_list")
-        else:
-            # Если данные не валидны, возвращаем ошибку
-            messages.error(request, "Ошибка: все поля должны быть заполнены!")
-
-            context = {
-            "title": f"Редактирование услуги {service.name}",
-            "form": form,
-            "button_txt": "Обновить"
-            }
-            
-            return render(request, "core/service_form.html", context)
 
 
 class ServiceCreateView(CreateView):

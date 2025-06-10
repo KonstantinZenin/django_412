@@ -1,12 +1,12 @@
 # barbershop\urls.py
 from django.contrib import admin
 from django.urls import path, include
-from core.views import landing
+from core.views import  LandingPageView
 from django.conf import settings
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", landing, name="landing"),
+    path("", LandingPageView.as_view(), name="landing"),
     # Подключаем маршруты из приложения core
     path("barbershop/", include("core.urls")),
     path("users/", include("users.urls")),
