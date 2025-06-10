@@ -4,8 +4,6 @@ from django.urls import path
 from .views import (
     master_detail,
     ThanksView,
-    service_create,
-    service_update,
     masters_services_by_id,
     order_create,
     GreetingView,
@@ -14,6 +12,7 @@ from .views import (
     ServicesListView,
     OrdersListView,
     ServiceCreateView,
+    ServiceUpdateView
 )
 
 
@@ -28,7 +27,7 @@ urlpatterns = [
     path("services/", ServicesListView.as_view(), name="services_list"),
     path("service/<int:pk>/", ServiceDetailView.as_view(), name="service_detail"),
     path('service_create/<str:form_mode>/', ServiceCreateView.as_view(), name='service_create'),
-    path('service_update/<int:service_id>/', service_update, name='service_update'),
+    path('service_update/<int:pk>/', ServiceUpdateView.as_view(), name='service_update'),
     path("masters_services/", masters_services_by_id, name="masters_services_by_id_ajax"),
     path('order_create/', order_create, name="order_create"),
     path("greeting/", GreetingView.as_view(), name="greeting"),
